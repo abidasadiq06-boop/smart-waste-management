@@ -1,7 +1,4 @@
 from django.db import models
-
-
-from django.db import models
 from django.contrib.auth.models import User
 
 # പൗരന്മാരുടെയും HKS ജീവനക്കാരുടെയും പ്രൊഫൈൽ

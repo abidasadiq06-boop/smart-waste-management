@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import UserProfile, ScrapCategory, WasteRequest, CollectionPayment
 
-# Register your models here.
+admin.site.register(UserProfile)
+admin.site.register(ScrapCategory)
+admin.site.register(WasteRequest)
+admin.site.register(CollectionPayment)
