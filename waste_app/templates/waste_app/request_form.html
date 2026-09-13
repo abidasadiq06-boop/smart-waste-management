@@ -1,19 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Waste Pickup Request</title>
+    <title>New Pickup Request</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="container mt-5">
+<body class="container py-5 bg-light">
     <div class="row justify-content-center">
         <div class="col-md-6 card p-4 shadow-sm">
-            <h3 class="mb-3 text-center">New Waste Pickup Request</h3>
+            <h3 class="mb-4 text-center text-success">Request Waste Pickup</h3>
+            
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-success w-100">Submit Request</button>
+
+                <!-- 1. Waste Type Selection -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Waste Type</label>
+                    <select name="request_type" id="id_request_type" class="form-select" onchange="toggleScrapFields()">
+                        <option value="normal">Normal Waste (Dry / Segregated)</option>
+                        <option value="scrap">Custom / Scrap Material</option>
+                    </select>
+                </div>
+
+                <!-- 2. Normal Waste Info Notice -->
+                <div id="normal_waste_info" class="alert alert-info py-2">
+                    <small>ℹ️ Doorstep user fee (₹50) applies upon collection.</small>
+                </div>
+
+                <!-- 3. Scrap-only Fields (Hidden for Normal Waste) -->
+                <div id="scrap_fields" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Scrap Category</label>
+                        {{ form.scrap_category }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Estimated Quantity (in Kg)</label>
+                        {{ form.quantity }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Scrap Photo</label>
+                        {{ form.scrap_image }}
+                    </div>
+                </div>
+
+                <!-- 4. Scheduled Pickup Date -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Preferred Pickup Date</label>
+                    {{ form.scheduled_date }}
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 mt-3">Submit Request</button>
+                <a href="/" class="btn btn-link w-100 text-center text-secondary mt-2">Back to Home</a>
             </form>
         </div>
     </div>
+
+    <script>
+        function toggleScrapFields() {
+            var requestType = document.getElementById("id_request_type").value;
+            var scrapFields = document.getElementById("scrap_fields");
+            var normalInfo = document.getElementById("normal_waste_info");
+
+            if (requestType === "scrap") {
+                scrapFields.style.display = "block";
+                normalInfo.style.display = "none";
+            } else {
+                scrapFields.style.display = "none";
+                normalInfo.style.display = "block";
+            }
+        }
+        document.addEventListener("DOMContentLoaded", toggleScrapFields);
+    </script>
 </body>
 </html>

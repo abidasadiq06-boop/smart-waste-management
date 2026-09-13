@@ -1,16 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Smart Waste Management</title>
+    <title>Smart Waste Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="container py-5 text-center">
-    <div class="card p-5 shadow-sm">
-        <h1 class="text-success">Smart Waste Management System</h1>
-        <p class="lead">Haritha Karma Sena Project Portal</p>
-        <div class="mt-4">
-            <a href="/new-request/" class="btn btn-success btn-lg">New Waste Pickup Request</a>
-            <a href="/admin/" class="btn btn-outline-secondary btn-lg ms-2">Admin Dashboard</a>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success px-4">
+        <a class="navbar-brand fw-bold" href="/">🌿 Haritha Karma Sena Portal</a>
+        <div class="ms-auto">
+            {% if user.is_authenticated %}
+                <span class="text-white me-3">User: <strong>{{ user.username }}</strong></span>
+                <form action="{% url 'logout' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                </form>
+            {% else %}
+                <a href="/login/" class="btn btn-light btn-sm me-2">Login</a>
+                <a href="/register/" class="btn btn-warning btn-sm">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold text-success">Smart Waste Management System</h1>
+            <p class="text-muted">Digital Platform for Haritha Karma Sena Waste Collection & Recycling</p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <!-- Citizen Portal Card -->
+            <div class="col-md-5">
+                <div class="card h-100 shadow-sm border-0 text-center p-4">
+                    <div class="card-body">
+                        <h4 class="card-title text-primary">Citizen Portal</h4>
+                        <p class="card-text text-muted">Request doorstep waste pickup and track collection status.</p>
+                        {% if user.is_authenticated %}
+                            <a href="/new-request/" class="btn btn-primary w-100 mb-2">+ New Pickup Request</a>
+                            <a href="/my-requests/" class="btn btn-outline-primary w-100">View My Requests</a>
+                        {% else %}
+                            <a href="/login/" class="btn btn-primary w-100 mb-2">Login to Request</a>
+                            <a href="/register/" class="btn btn-outline-secondary w-100">Create Account</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Worker Portal Card -->
+            <div class="col-md-5">
+                <div class="card h-100 shadow-sm border-0 text-center p-4">
+                    <div class="card-body">
+                        <h4 class="card-title text-success">HKS Worker Portal</h4>
+                        <p class="card-text text-muted">Manage area collections, update pickup status, and view requests.</p>
+                        <a href="/worker-dashboard/" class="btn btn-success w-100 mb-2">Open Worker Dashboard</a>
+                        <a href="/admin/" class="btn btn-outline-dark w-100">Admin Control Panel</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

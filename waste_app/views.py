@@ -42,3 +42,37 @@ def create_request(request):
 def request_list(request):
     requests = WasteRequest.objects.filter(citizen=request.user).order_by('-created_at')
     return render(request, 'waste_app/request_list.html', {'requests': requests})
+    from django.contrib.auth import login
+from .forms import CitizenRegistrationForm
+from .models import UserProfile
+
+def register_citizen(request):
+    if request.method == 'POST':
+        form = CitizenRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            UserProfile.objects.create(
+                user=user,
+                role='citizen',
+                phone_number=form.cleaned_data.get('phone_number'),
+                ward_number=form.cleaned_data.get('ward_number'),
+                address=form.cleaned_data.get('address')
+            )
+            login(request, user)
+            return redirect('home')
+    else:
+        form = CitizenRegistrationForm()
+    return render(request, 'waste_app/register.html', {'form': form})
+    from django.contrib.auth.decorators import login_required
+
+@login_required
+def worker_dashboard(request):
+    all_requests = WasteRequest.objects.all().order_by('-created_at')
+    return render(request, 'waste_app/worker_dashboard.html', {'requests': all_requests})
+
+@login_required
+def update_status(request, request_id, new_status):
+    req = WasteRequest.objects.get(id=request_id)
+    req.status = new_status
+    req.save()
+    return redirect('worker_dashboard')
