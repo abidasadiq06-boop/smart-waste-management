@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# പൗരന്മാരുടെയും HKS ജീവനക്കാരുടെയും പ്രൊഫൈൽ
+
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('citizen', 'Citizen'),

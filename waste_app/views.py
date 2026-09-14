@@ -1,29 +1,29 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from .forms import WasteRequestForm
+from .forms import CitizenRegistrationForm, WasteRequestForm
+from .models import UserProfile, WasteRequest
 
 def home(request):
     return render(request, 'waste_app/home.html')
 
-@login_required
-def create_request(request):
+def register_citizen(request):
     if request.method == 'POST':
-        form = WasteRequestForm(request.POST, request.FILES)
+        form = CitizenRegistrationForm(request.POST)
         if form.is_valid():
-            waste_req = form.save(commit=False)
-            waste_req.citizen = request.user
-            waste_req.save()
-            return redirect('home')
+            user = form.save()
+            UserProfile.objects.create(
+                user=user,
+                role='citizen',
+                phone_number=form.cleaned_data.get('phone_number'),
+                ward_number=form.cleaned_data.get('ward_number'),
+                address=form.cleaned_data.get('address')
+            )
+            login(request, user)
+            return redirect('request_list')
     else:
-        form = WasteRequestForm()
-    return render(request, 'waste_app/request_form.html', {'form': form})
-    from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .forms import WasteRequestForm
-from .models import WasteRequest
-
-def home(request):
-    return render(request, 'waste_app/home.html')
+        form = CitizenRegistrationForm()
+    return render(request, 'waste_app/register.html', {'form': form})
 
 @login_required
 def create_request(request):
@@ -42,28 +42,6 @@ def create_request(request):
 def request_list(request):
     requests = WasteRequest.objects.filter(citizen=request.user).order_by('-created_at')
     return render(request, 'waste_app/request_list.html', {'requests': requests})
-    from django.contrib.auth import login
-from .forms import CitizenRegistrationForm
-from .models import UserProfile
-
-def register_citizen(request):
-    if request.method == 'POST':
-        form = CitizenRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            UserProfile.objects.create(
-                user=user,
-                role='citizen',
-                phone_number=form.cleaned_data.get('phone_number'),
-                ward_number=form.cleaned_data.get('ward_number'),
-                address=form.cleaned_data.get('address')
-            )
-            login(request, user)
-            return redirect('home')
-    else:
-        form = CitizenRegistrationForm()
-    return render(request, 'waste_app/register.html', {'form': form})
-    from django.contrib.auth.decorators import login_required
 
 @login_required
 def worker_dashboard(request):
@@ -76,3 +54,14 @@ def update_status(request, request_id, new_status):
     req.status = new_status
     req.save()
     return redirect('worker_dashboard')
+    
+@login_required
+def dashboard_redirect(request):
+    if request.user.is_superuser:
+        return redirect('/admin/')
+    
+    profile = UserProfile.objects.filter(user=request.user).first()
+    if profile and profile.role == 'worker':
+        return redirect('worker_dashboard')
+    else:
+        return redirect('request_list')

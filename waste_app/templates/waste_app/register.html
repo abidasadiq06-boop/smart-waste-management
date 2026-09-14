@@ -1,22 +1,56 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Citizen Registration</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 card p-4 shadow-sm">
-            <h3 class="mb-3 text-center">Citizen Registration</h3>
-            <form method="POST">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-success w-100">Register</button>
-            </form>
-            <div class="text-center mt-3">
-                <a href="/login/">Already have an account? Login here</a>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from .forms import CitizenRegistrationForm, WasteRequestForm
+from .models import UserProfile, WasteRequest
+
+def home(request):
+    return render(request, 'waste_app/home.html')
+
+def register_citizen(request):
+    if request.method == 'POST':
+        form = CitizenRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            UserProfile.objects.create(
+                user=user,
+                role='citizen',
+                phone_number=form.cleaned_data.get('phone_number'),
+                ward_number=form.cleaned_data.get('ward_number'),
+                address=form.cleaned_data.get('address')
+            )
+            login(request, user)
+            return redirect('request_list')
+    else:
+        form = CitizenRegistrationForm()
+    return render(request, 'waste_app/register.html', {'form': form})
+
+@login_required
+def create_request(request):
+    if request.method == 'POST':
+        form = WasteRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            waste_req = form.save(commit=False)
+            waste_req.citizen = request.user
+            waste_req.save()
+            return redirect('request_list')
+    else:
+        form = WasteRequestForm()
+    return render(request, 'waste_app/request_form.html', {'form': form})
+
+@login_required
+def request_list(request):
+    requests = WasteRequest.objects.filter(citizen=request.user).order_by('-created_at')
+    return render(request, 'waste_app/request_list.html', {'requests': requests})
+
+@login_required
+def worker_dashboard(request):
+    all_requests = WasteRequest.objects.all().order_by('-created_at')
+    return render(request, 'waste_app/worker_dashboard.html', {'requests': all_requests})
+
+@login_required
+def update_status(request, request_id, new_status):
+    req = WasteRequest.objects.get(id=request_id)
+    req.status = new_status
+    req.save()
+    return redirect('worker_dashboard')
