@@ -12,4 +12,5 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('worker-dashboard/', views.worker_dashboard, name='worker_dashboard'),
     path('update-status/<int:request_id>/<str:new_status>/', views.update_status, name='update_status'),
+    path('citizen-dashboard/', views.citizen_dashboard, name='citizen_dashboard'),
 ]

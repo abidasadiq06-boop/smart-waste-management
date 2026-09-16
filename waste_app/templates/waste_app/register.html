@@ -197,7 +197,7 @@
 
         {% if form.errors %}
             <div class="alert alert-danger py-2 px-3 mb-3 text-center" style="font-size: 0.82rem; border-radius: 8px;">
-                Please verify the details entered.
+                {{ form.errors }}
             </div>
         {% endif %}
 

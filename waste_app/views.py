@@ -15,8 +15,8 @@ def register_citizen(request):
             UserProfile.objects.create(
                 user=user,
                 role='citizen',
-                phone_number=form.cleaned_data.get('phone_number'),
-                ward_number=form.cleaned_data.get('ward_number'),
+                phone=form.cleaned_data.get('phone_number'),
+                ward_no=form.cleaned_data.get('ward_number'),
                 address=form.cleaned_data.get('address')
             )
             login(request, user)
@@ -65,3 +65,33 @@ def dashboard_redirect(request):
         return redirect('worker_dashboard')
     else:
         return redirect('request_list')
+from django.shortcuts import render
+from .models import WasteRequest 
+
+@login_required
+def citizen_dashboard(request):
+    user = request.user
+    
+    # Filter requests by the citizen field matching logged in user
+    user_requests = WasteRequest.objects.filter(citizen=user)
+    
+    # Aggregate statistics for dashboard summary cards
+    total_requests = user_requests.count()
+    pending_count = user_requests.filter(status='pending').count()
+    in_progress_count = user_requests.filter(status__in=['accepted', 'scheduled']).count()
+    completed_count = user_requests.filter(status='completed').count()
+    
+    # Order by latest ID to get recent requests
+    recent_requests = user_requests.order_by('-id')[:5]
+
+    context = {
+        'total_requests': total_requests,
+        'pending_count': pending_count,
+        'in_progress_count': in_progress_count,
+        'completed_count': completed_count,
+        'unread_notifications_count': 0,
+        'recent_requests': recent_requests,
+    }
+    
+    # Specify the exact template path within waste_app directory
+    return render(request, 'waste_app/citizen_dashboard.html', context)

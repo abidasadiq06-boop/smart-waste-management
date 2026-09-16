@@ -10,7 +10,7 @@ class UserProfile(models.Model):
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='citizen')
-    phone = models.CharField(max_length=15)
+    phone = models.CharField(max_length=10)
     ward_no = models.CharField(max_length=10)
     address = models.TextField()
 
