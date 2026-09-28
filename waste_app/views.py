@@ -92,6 +92,16 @@ def citizen_dashboard(request):
         'unread_notifications_count': 0,
         'recent_requests': recent_requests,
     }
-    
-    # Specify the exact template path within waste_app directory
     return render(request, 'waste_app/citizen_dashboard.html', context)
+def about(request):
+        return render(request, 'waste_app/about.html')
+
+
+def services(request):
+        return render(request, 'waste_app/services.html')
+
+
+def contact(request):
+        return render(request, 'waste_app/contact.html')
+    
+    

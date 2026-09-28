@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 class WasteRequestForm(forms.ModelForm):
     class Meta:
         model = WasteRequest
-        fields = ['request_type', 'scrap_category', 'quantity', 'scrap_image', 'scheduled_date']
+        fields = ['request_type','scrap_category','quantity','scrap_image','scheduled_date','normal_waste_items']
         widgets = {
             'scheduled_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'scrap_category': forms.Select(attrs={'class': 'form-select'}),

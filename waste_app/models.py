@@ -49,6 +49,7 @@ class WasteRequest(models.Model):
     scrap_image = models.ImageField(upload_to='scrap_images/', null=True, blank=True)
     estimated_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     scheduled_date = models.DateField(null=True, blank=True)
+    normal_waste_items = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
