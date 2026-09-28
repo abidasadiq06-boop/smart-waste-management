@@ -93,6 +93,46 @@ def citizen_dashboard(request):
         'recent_requests': recent_requests,
     }
     return render(request, 'waste_app/citizen_dashboard.html', context)
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import UserProfile, WasteRequest, CollectionPayment
+
+
+@login_required
+def admin_dashboard(request):
+
+    total_citizens = UserProfile.objects.filter(role='citizen').count()
+    total_workers = UserProfile.objects.filter(role='worker').count()
+
+    total_requests = WasteRequest.objects.count()
+    pending_requests = WasteRequest.objects.filter(status='pending').count()
+    completed_requests = WasteRequest.objects.filter(status='completed').count()
+
+    total_payments = CollectionPayment.objects.count()
+
+    context = {
+        'total_citizens': total_citizens,
+        'total_workers': total_workers,
+        'total_requests': total_requests,
+        'pending_requests': pending_requests,
+        'completed_requests': completed_requests,
+        'total_payments': total_payments,
+    }
+
+    return render(
+        request,
+        'waste_app/admin_dashboard.html',
+        context
+    )    
+@login_required
+def manage_citizens(request):
+    citizens = UserProfile.objects.filter(role='citizen').select_related('user')
+
+    return render(
+        request,
+        'waste_app/manage_citizens.html',
+        {'citizens': citizens}
+    )    
 def about(request):
         return render(request, 'waste_app/about.html')
 

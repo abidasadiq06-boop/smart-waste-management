@@ -76,3 +76,34 @@ class CollectionPayment(models.Model):
 
     def __str__(self):
         return f"Receipt #{self.receipt_no} - {self.payment_status}"
+def __str__(self):
+        return f"Receipt #{self.receipt_no} - {self.payment_status}"
+
+
+class MonthlyWasteSchedule(models.Model):
+    MONTH_CHOICES = [
+        (1, 'January'),
+        (2, 'February'),
+        (3, 'March'),
+        (4, 'April'),
+        (5, 'May'),
+        (6, 'June'),
+        (7, 'July'),
+        (8, 'August'),
+        (9, 'September'),
+        (10, 'October'),
+        (11, 'November'),
+        (12, 'December'),
+    ]
+
+    month = models.IntegerField(
+        choices=MONTH_CHOICES,
+        unique=True
+    )
+
+    waste_items = models.TextField(
+        help_text="Enter waste items separated by commas"
+    )
+
+    def __str__(self):
+        return dict(self.MONTH_CHOICES)[self.month]        

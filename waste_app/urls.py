@@ -16,4 +16,6 @@ urlpatterns = [
     path('worker-dashboard/', views.worker_dashboard, name='worker_dashboard'),
     path('update-status/<int:request_id>/<str:new_status>/', views.update_status, name='update_status'),
     path('citizen-dashboard/', views.citizen_dashboard, name='citizen_dashboard'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('manage-citizens/',views.manage_citizens,name='manage_citizens'),
 ]
