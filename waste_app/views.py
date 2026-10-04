@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from .forms import CitizenRegistrationForm, WasteRequestForm
-from .models import UserProfile, WasteRequest
+from .models import UserProfile, WasteRequest, CollectionPayment
+from django.contrib import messages
 
 def home(request):
     return render(request, 'waste_app/home.html')
@@ -61,12 +62,12 @@ def dashboard_redirect(request):
         return redirect('/admin/')
     
     profile = UserProfile.objects.filter(user=request.user).first()
-    if profile and profile.role == 'worker':
+    if profile and profile.role == 'hks_team':
         return redirect('worker_dashboard')
     else:
+    
         return redirect('request_list')
-from django.shortcuts import render
-from .models import WasteRequest 
+
 
 @login_required
 def citizen_dashboard(request):
@@ -102,7 +103,7 @@ from .models import UserProfile, WasteRequest, CollectionPayment
 def admin_dashboard(request):
 
     total_citizens = UserProfile.objects.filter(role='citizen').count()
-    total_workers = UserProfile.objects.filter(role='worker').count()
+    total_workers = UserProfile.objects.filter(role='hks_team').count()
 
     total_requests = WasteRequest.objects.count()
     pending_requests = WasteRequest.objects.filter(status='pending').count()
@@ -144,4 +145,51 @@ def services(request):
 def contact(request):
         return render(request, 'waste_app/contact.html')
     
-    
+@login_required
+def manage_hks_members(request):
+    members = UserProfile.objects.filter(role='hks_team').select_related('user')
+
+    return render(
+        request,
+        'waste_app/manage_hks_members.html',
+        {'members': members}
+    )
+@login_required
+def add_hks_member(request):
+
+    if request.method == 'POST':
+
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        phone = request.POST.get('phone')
+        ward_no = request.POST.get('ward_no')
+        address = request.POST.get('address')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return redirect('add_hks_member')
+
+        user = User.objects.create_user(
+            username=username,
+            password=password
+        )
+
+        UserProfile.objects.create(
+            user=user,
+            role='hks_team',
+            phone=phone,
+            ward_no=ward_no,
+            address=address
+        )
+
+        messages.success(
+            request,
+            'HKS Member added successfully!'
+        )
+
+        return redirect('manage_hks_members')
+
+    return render(
+        request,
+        'waste_app/add_hks_member.html'
+    )

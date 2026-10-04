@@ -18,4 +18,6 @@ urlpatterns = [
     path('citizen-dashboard/', views.citizen_dashboard, name='citizen_dashboard'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('manage-citizens/',views.manage_citizens,name='manage_citizens'),
+    path('manage-hks-members/', views.manage_hks_members, name='manage_hks_members'),
+    path('add-hks-member/', views.add_hks_member, name='add_hks_member'),
 ]
