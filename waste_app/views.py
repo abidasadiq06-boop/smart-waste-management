@@ -1,9 +1,42 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from .forms import CitizenRegistrationForm, WasteRequestForm
-from .models import UserProfile, WasteRequest, CollectionPayment
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import UserProfile, WasteRequest, CollectionPayment
+from django.contrib.auth import login,authenticate
+
+def user_login(request):
+
+    if request.method == 'POST':
+
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+
+            login(request, user)
+
+            # Admin
+            if user.is_superuser:
+                return redirect('admin_dashboard')
+
+            # Other users
+            profile = UserProfile.objects.get(user=user)
+
+            if profile.role == 'hks_team':
+                return redirect('worker_dashboard')
+
+            elif profile.role == 'citizen':
+                return redirect('citizen_dashboard')
+
+        else:
+            messages.error(request, 'Invalid username or password')
+
+    return render(request, 'waste_app/login.html')
 
 def home(request):
     return render(request, 'waste_app/home.html')
@@ -59,7 +92,7 @@ def update_status(request, request_id, new_status):
 @login_required
 def dashboard_redirect(request):
     if request.user.is_superuser:
-        return redirect('/admin/')
+        return redirect('admin_dashboard')
     
     profile = UserProfile.objects.filter(user=request.user).first()
     if profile and profile.role == 'hks_team':
@@ -94,9 +127,6 @@ def citizen_dashboard(request):
         'recent_requests': recent_requests,
     }
     return render(request, 'waste_app/citizen_dashboard.html', context)
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import UserProfile, WasteRequest, CollectionPayment
 
 
 @login_required
