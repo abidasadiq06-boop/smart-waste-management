@@ -1,5 +1,5 @@
 from django import forms
-from .models import WasteRequest
+from .models import WasteRequest,ScrapCategory
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
@@ -28,3 +28,18 @@ class CitizenRegistrationForm(UserCreationForm):
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
+class ScrapCategoryForm(forms.ModelForm):
+    class Meta:
+        model = ScrapCategory
+        fields = ['name', 'rate_per_kg']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Scrap Item Name'
+            }),
+            'rate_per_kg': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Rate per Kg',
+                'step': '0.01'
+            }),
+        }        

@@ -107,3 +107,4 @@ class MonthlyWasteSchedule(models.Model):
 
     def __str__(self):
         return dict(self.MONTH_CHOICES)[self.month]        
+    
