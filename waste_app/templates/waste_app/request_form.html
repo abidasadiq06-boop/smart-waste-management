@@ -1,74 +1,248 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>New Pickup Request</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waste Pickup Request - Haritha Karma Sena</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f3faf6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
 </head>
-<body class="container py-5 bg-light">
-    <div class="row justify-content-center">
-        <div class="col-md-6 card p-4 shadow-sm">
-            <h3 class="mb-4 text-center text-success">Request Waste Pickup</h3>
-            
-            <form method="POST" enctype="multipart/form-data">
+<body class="p-4 md:p-8 text-gray-800">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+
+        <!-- Top Navigation -->
+        <div class="flex items-center justify-between">
+            <a href="{% url 'citizen_dashboard' %}" class="inline-flex items-center space-x-2 text-xs font-bold text-emerald-800 hover:text-emerald-950">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <span class="text-xs text-gray-500 font-medium">Haritha Karma Sena Collection Portal</span>
+        </div>
+
+        <!-- Tab Switcher (Normal Waste vs Scrap) -->
+        <div class="bg-white p-2 rounded-2xl shadow-sm border border-emerald-100 flex space-x-2">
+            <button id="tabNormalBtn" onclick="switchTab('normal')" class="flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 bg-emerald-700 text-white transition">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Normal Waste Collection</span>
+            </button>
+            <button id="tabScrapBtn" onclick="switchTab('scrap')" class="flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 text-gray-600 hover:bg-gray-50 transition">
+                <i class="fa-solid fa-recycle"></i>
+                <span>Scrap / Custom Waste</span>
+            </button>
+        </div>
+
+        <!-- ================= SECTION 1: NORMAL WASTE ================= -->
+        <div id="sectionNormal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Guidelines -->
+            <div class="bg-white p-6 rounded-3xl border border-emerald-100 shadow-sm space-y-4">
+                <h3 class="text-sm font-bold text-gray-800 border-b pb-2 flex items-center">
+                    <i class="fa-solid fa-circle-info text-emerald-600 mr-2"></i>
+                    <span>Collection Information</span>
+                </h3>
+                <div class="space-y-3 text-xs text-gray-600">
+                    <div class="flex justify-between py-1 border-b border-gray-50">
+                        <span>Monthly Fee:</span>
+                        <span class="font-bold text-emerald-800 text-sm">₹50</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-gray-50">
+                        <span>Service:</span>
+                        <span class="font-semibold text-gray-700">Household dry segregated waste</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-gray-50">
+                        <span>Schedule:</span>
+                        <span class="font-semibold text-gray-700">As per Haritha Karma Sena Calendar</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-emerald-50 rounded-2xl text-[11px] text-emerald-800 leading-relaxed">
+                    Note: Hand over only dry and cleaned recyclable items matching the month's category.
+                </div>
+            </div>
+
+            <!-- Normal Waste Form -->
+            <div class="bg-white p-6 rounded-3xl border border-emerald-100 shadow-sm">
+                <form method="POST" action="{% url 'new-request' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_type" value="normal">
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Select Pickup Date</label>
+                        <input type="date" name="preferred_date" required onchange="updateCategory(this.value)" class="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+
+                    <div class="p-4 bg-emerald-50/70 border border-emerald-100 rounded-2xl mb-6">
+                        <p class="text-xs font-bold text-gray-800 mb-1">What will be collected?</p>
+                        <p id="categoryText" class="text-xs font-semibold text-emerald-800">Please select a pickup date above.</p>
+                        <input type="hidden" id="categoryInput" name="waste_category" value="">
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <a href="{% url 'citizen_dashboard' %}" class="px-5 py-2.5 border rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50">Cancel</a>
+                        <button type="submit" class="px-6 py-2.5 bg-emerald-700 text-white text-xs font-bold rounded-xl hover:bg-emerald-800 shadow">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= SECTION 2: SCRAP COLLECTION ================= -->
+        <div id="sectionScrap" class="hidden bg-white p-6 rounded-3xl border border-blue-100 shadow-sm space-y-6">
+            <div class="flex items-center space-x-3 border-b pb-4">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-recycle"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800">Select Scrap Items to Sell</h3>
+                    <p class="text-xs text-gray-400">Rates are fixed. Enter estimated weight to calculate payout.</p>
+                </div>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
                 {% csrf_token %}
+                <input type="hidden" name="request_type" value="scrap">
 
-                <!-- 1. Waste Type Selection -->
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Waste Type</label>
-                    <select name="request_type" id="id_request_type" class="form-select" onchange="toggleScrapFields()">
-                        <option value="normal">Normal Waste (Dry / Segregated)</option>
-                        <option value="scrap">Custom / Scrap Material</option>
-                    </select>
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b text-gray-400">
+                                <th class="pb-2 w-10">Select</th>
+                                <th class="pb-2">Scrap Item</th>
+                                <th class="pb-2">Rate (₹/Kg)</th>
+                                <th class="pb-2 w-32">Weight (Kg)</th>
+                                <th class="pb-2 text-right">Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            <tr>
+                                <td class="py-2.5"><input type="checkbox" name="scrap_items" value="Iron Scrap" onchange="calculateTotal()" class="item-check rounded text-blue-600"></td>
+                                <td class="py-2.5 font-semibold text-gray-700">Iron Scrap</td>
+                                <td class="py-2.5 font-mono rate" data-rate="25">₹25</td>
+                                <td class="py-2.5"><input type="number" min="0" placeholder="0" oninput="calculateTotal()" class="weight-input w-24 border rounded-lg p-1.5 text-center text-xs"></td>
+                                <td class="py-2.5 text-right font-bold text-gray-700 item-total">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2.5"><input type="checkbox" name="scrap_items" value="Aluminium Scrap" onchange="calculateTotal()" class="item-check rounded text-blue-600"></td>
+                                <td class="py-2.5 font-semibold text-gray-700">Aluminium Scrap</td>
+                                <td class="py-2.5 font-mono rate" data-rate="100">₹100</td>
+                                <td class="py-2.5"><input type="number" min="0" placeholder="0" oninput="calculateTotal()" class="weight-input w-24 border rounded-lg p-1.5 text-center text-xs"></td>
+                                <td class="py-2.5 text-right font-bold text-gray-700 item-total">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2.5"><input type="checkbox" name="scrap_items" value="Newspaper" onchange="calculateTotal()" class="item-check rounded text-blue-600"></td>
+                                <td class="py-2.5 font-semibold text-gray-700">Old Newspaper</td>
+                                <td class="py-2.5 font-mono rate" data-rate="15">₹15</td>
+                                <td class="py-2.5"><input type="number" min="0" placeholder="0" oninput="calculateTotal()" class="weight-input w-24 border rounded-lg p-1.5 text-center text-xs"></td>
+                                <td class="py-2.5 text-right font-bold text-gray-700 item-total">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2.5"><input type="checkbox" name="scrap_items" value="Cardboard" onchange="calculateTotal()" class="item-check rounded text-blue-600"></td>
+                                <td class="py-2.5 font-semibold text-gray-700">Cardboard</td>
+                                <td class="py-2.5 font-mono rate" data-rate="10">₹10</td>
+                                <td class="py-2.5"><input type="number" min="0" placeholder="0" oninput="calculateTotal()" class="weight-input w-24 border rounded-lg p-1.5 text-center text-xs"></td>
+                                <td class="py-2.5 text-right font-bold text-gray-700 item-total">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- 2. Normal Waste Info Notice -->
-                <div id="normal_waste_info" class="alert alert-info py-2">
-                    <small>ℹ️ Doorstep user fee (₹50) applies upon collection.</small>
+                <!-- Total Amount Box -->
+                <div class="flex justify-between items-center p-3.5 bg-blue-50 rounded-2xl border border-blue-100">
+                    <span class="text-xs font-bold text-blue-900">Total Estimated Amount:</span>
+                    <span id="grandTotal" class="text-base font-black text-blue-700">₹0</span>
                 </div>
 
-                <!-- 3. Scrap-only Fields (Hidden for Normal Waste) -->
-                <div id="scrap_fields" style="display: none;">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Scrap Category</label>
-                        {{ form.scrap_category }}
+                <!-- Pickup Date -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Select Pickup Date</label>
+                        <input type="date" name="preferred_date" required class="w-full border border-gray-200 rounded-xl p-2.5 text-xs">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Estimated Quantity (in Kg)</label>
-                        {{ form.quantity }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Scrap Photo</label>
-                        {{ form.scrap_image }}
-                    </div>
                 </div>
 
-                <!-- 4. Scheduled Pickup Date -->
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Preferred Pickup Date</label>
-                    {{ form.scheduled_date }}
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'citizen_dashboard' %}" class="px-5 py-2.5 border rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50">Cancel</a>
+                    <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 shadow">Submit Request</button>
                 </div>
-
-                <button type="submit" class="btn btn-success w-100 mt-3">Submit Request</button>
-                <a href="/" class="btn btn-link w-100 text-center text-secondary mt-2">Back to Home</a>
             </form>
         </div>
+
     </div>
 
+    <!-- Scripts for Tab & Calculations -->
     <script>
-        function toggleScrapFields() {
-            var requestType = document.getElementById("id_request_type").value;
-            var scrapFields = document.getElementById("scrap_fields");
-            var normalInfo = document.getElementById("normal_waste_info");
+        // Tab switching
+        function switchTab(type) {
+            const secNormal = document.getElementById('sectionNormal');
+            const secScrap = document.getElementById('sectionScrap');
+            const btnNormal = document.getElementById('tabNormalBtn');
+            const btnScrap = document.getElementById('tabScrapBtn');
 
-            if (requestType === "scrap") {
-                scrapFields.style.display = "block";
-                normalInfo.style.display = "none";
+            if (type === 'scrap') {
+                secNormal.classList.add('hidden');
+                secScrap.classList.remove('hidden');
+                btnScrap.className = "flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 bg-blue-600 text-white transition";
+                btnNormal.className = "flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 text-gray-600 hover:bg-gray-50 transition";
             } else {
-                scrapFields.style.display = "none";
-                normalInfo.style.display = "block";
+                secScrap.classList.add('hidden');
+                secNormal.classList.remove('hidden');
+                btnNormal.className = "flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 bg-emerald-700 text-white transition";
+                btnScrap.className = "flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 text-gray-600 hover:bg-gray-50 transition";
             }
         }
-        document.addEventListener("DOMContentLoaded", toggleScrapFields);
+
+        // Auto check URL parameter (e.g. ?type=scrap)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('type') === 'scrap') {
+            switchTab('scrap');
+        }
+
+        // Calendar category mapping
+        const monthlySchedule = {
+            1: 'Plastic, Footwear, Bag',
+            2: 'Plastic, Glass, Mirror',
+            3: 'Plastic, E-Waste',
+            4: 'Plastic, Thermocol',
+            5: 'Plastic, Cloth',
+            6: 'Plastic, E-Waste',
+            7: 'Plastic, E-Waste',
+            8: 'Plastic, Footwear, Bag',
+            9: 'Plastic, Glass, Mirror',
+            10: 'Plastic, E-Waste',
+            11: 'Plastic, Thermocol',
+            12: 'Plastic, Cloth'
+        };
+
+        function updateCategory(dateVal) {
+            if (!dateVal) return;
+            const m = new Date(dateVal).getMonth() + 1;
+            const cat = monthlySchedule[m] || 'Dry Waste';
+            document.getElementById('categoryText').innerText = cat;
+            document.getElementById('categoryInput').value = cat;
+        }
+
+        // Total calculation
+        function calculateTotal() {
+            let total = 0;
+            document.querySelectorAll('#sectionScrap tbody tr').forEach(row => {
+                const checked = row.querySelector('.item-check').checked;
+                const rate = parseFloat(row.querySelector('.rate').dataset.rate);
+                const weight = parseFloat(row.querySelector('.weight-input').value) || 0;
+                const totalCell = row.querySelector('.item-total');
+
+                if (checked && weight > 0) {
+                    const rowSum = rate * weight;
+                    totalCell.innerText = '₹' + rowSum;
+                    total += rowSum;
+                } else {
+                    totalCell.innerText = '-';
+                }
+            });
+            document.getElementById('grandTotal').innerText = '₹' + total;
+        }
     </script>
 </body>
 </html>

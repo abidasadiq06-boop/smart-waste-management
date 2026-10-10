@@ -1,307 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Citizen Dashboard - Haritha Karma Sena</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    .active-nav { background-color: #15803d; border-radius: 0.5rem; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard - Haritha Karma Sena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-50 font-sans flex h-screen overflow-hidden">
+<body class="bg-gray-50 text-gray-800 p-4 md:p-6 min-h-screen">
 
-  <!-- SIDEBAR -->
-  <aside class="w-64 bg-[#0f472e] text-white flex flex-col justify-between p-4 flex-shrink-0">
-    <div>
-      <div class="flex items-center space-x-3 mb-8 px-2">
-        <i data-lucide="sprout" class="w-7 h-7 text-emerald-300"></i>
-        <span class="text-lg font-bold tracking-wide">Haritha Karma Sena</span>
-      </div>
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
 
-      <nav class="space-y-1.5 text-sm">
-        <a href="#" onclick="showSection('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg active-nav text-white">
-          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-          <span class="font-medium">Dashboard</span>
-        </a>
-        <a href="#" onclick="showSection('request')" id="nav-request" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-emerald-100 hover:bg-emerald-800">
-          <i data-lucide="plus-circle" class="w-5 h-5"></i>
-          <span class="font-medium">New Pickup Request</span>
-        </a>
-        <a href="#" onclick="showSection('dashboard')" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-emerald-100 hover:bg-emerald-800">
-          <i data-lucide="clock-3" class="w-5 h-5"></i>
-          <span class="font-medium">Track Requests</span>
-        </a>
-        
-        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-emerald-100 hover:bg-emerald-800">
-          <div class="flex items-center space-x-3">
-            <i data-lucide="bell" class="w-5 h-5"></i>
-            <span class="font-medium">Notifications</span>
-          </div>
-          <span class="bg-red-500 text-xs px-2 py-0.5 rounded-full font-bold">2</span>
-        </a>
-        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-emerald-100 hover:bg-emerald-800">
-          <i data-lucide="user" class="w-5 h-5"></i>
-          <span class="font-medium">Profile</span>
-        </a>
-      </nav>
+        <!-- Sidebar Navigation -->
+        <aside class="w-full lg:w-64 bg-white rounded-3xl p-5 shadow-sm border border-emerald-50 flex flex-col justify-between shrink-0">
+            <div>
+                <!-- Brand Header -->
+                <div class="flex items-center space-x-3 mb-8 pb-4 border-b border-gray-100">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-200">
+                        <i class="fa-solid fa-leaf text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xs font-black text-gray-900 tracking-wide uppercase">Smart Waste</h2>
+                        <p class="text-[10px] text-emerald-600 font-bold">Haritha Karma Sena</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="space-y-2 text-xs font-bold">
+                    <a href="{% url 'citizen_dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-2xl bg-emerald-700 text-white shadow-sm transition">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{% url 'new-request' %}?type=normal" class="flex items-center space-x-3 px-4 py-3 rounded-2xl text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        <span>New Request</span>
+                    </a>
+                    <a href="#" class="flex items-center justify-between px-4 py-3 rounded-2xl text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-regular fa-bell"></i>
+                            <span>Notifications</span>
+                        </div>
+                        <span class="w-5 h-5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">{{ requests|length }}</span>
+                    </a>
+                    <a href="{% url 'download_receipt' latest_request.id %}" class="flex items-center space-x-3 px-4 py-3 rounded-2xl text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                              <i class="fa-solid fa-file-arrow-down text-base"></i>
+                            <span>Download Receipt</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-2xl text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                        <i class="fa-regular fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100 space-y-3">
+                <div class="p-3 bg-emerald-50 rounded-2xl flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-200 text-emerald-800 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-emerald-900">Clean Environment</p>
+                        <p class="text-[9px] text-emerald-600 font-medium">Better Tomorrow</p>
+                    </div>
+                </div>
+                <a href="{% url 'logout' %}" class="flex items-center space-x-2 text-xs font-bold text-red-500 px-4 py-2 hover:bg-red-50 rounded-xl transition">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 space-y-6 min-w-0">
+
+            <!-- Welcome Banner -->
+            <div class="bg-emerald-100/60 rounded-3xl p-6 border border-emerald-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-xl font-black text-gray-900">Welcome, {{ request.user.username }}! 👋</h1>
+                    <p class="text-xs text-gray-600 mt-1">Let's work together for a Cleaner and Healthier Community.</p>
+                </div>
+                <div class="flex items-center space-x-2 bg-white/80 px-3 py-1.5 rounded-full border border-emerald-200 text-xs font-bold text-emerald-800">
+                    <i class="fa-solid fa-location-dot text-emerald-600"></i>
+                    <span>Ward {{ profile.ward_no|default:"01" }}</span>
+                </div>
+            </div>
+
+            <!-- Top Cards Section (3 Equal Columns) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- 1. Normal Waste Booking Card -->
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-800 mb-1">Normal Waste Collection</h3>
+                        <p class="text-xs text-gray-500 leading-snug mb-3">Monthly household & shop waste collection by Haritha Karma Sena.</p>
+                        <span class="inline-block text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl mb-4">₹50 per month</span>
+                    </div>
+                    <a href="{% url 'new-request' %}?type=normal" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center space-x-2 shadow-sm transition">
+                        <span>Book Normal Waste</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- 2. Scrap / Custom Waste Booking Card -->
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-recycle"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-800 mb-1">Custom Waste / Scrap Collection</h3>
+                        <p class="text-xs text-gray-500 leading-snug mb-3">Sell your recyclable scrap items and receive instant payment.</p>
+                        <span class="inline-block text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-xl mb-4">Rate Based Payout</span>
+                    </div>
+                    <a href="{% url 'new-request' %}?type=scrap" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center space-x-2 shadow-sm transition">
+                        <span>Book Scrap Collection</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- 3. Next Scheduled Pickup Info -->
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-3.5 mb-3">
+                            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-lg shrink-0">
+                                <i class="fa-regular fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Next Scheduled Pickup</p>
+                                {% if next_pickup %}
+                                    <h4 class="text-sm font-black text-gray-800">{{ next_pickup.preferred_date|date:"d M Y" }}</h4>
+                                    <span class="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full capitalize">
+                                        {{ next_pickup.waste_category|default:next_pickup.request_type }}
+                                    </span>
+                                {% else %}
+                                    <h4 class="text-sm font-bold text-gray-400">No Pickups Scheduled</h4>
+                                    <span class="inline-block text-[10px] text-gray-400">No pending requests</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-xl border border-amber-100">
+                        <p class="text-[11px] text-amber-800 font-medium leading-snug">
+                            <b>Monthly User Fee:</b> Applicable for households, shops, and commercial entities as per guidelines.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lower Section: Recent Requests & Tracker & Notifications (3 Equal Columns) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                
+                <!-- 1. Recent Requests Table Card -->
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wide">Recent Requests</h4>
+                            <span class="text-[10px] text-gray-400">Latest</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="text-gray-400 border-b border-gray-100 text-[10px] uppercase">
+                                        <th class="pb-2">Date</th>
+                                        <th class="pb-2">Type</th>
+                                        <th class="pb-2 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-50">
+                                    {% for req in requests %}
+                                    <tr>
+                                        <td class="py-2.5 text-gray-600 font-medium">{{ req.preferred_date|date:"d M" }}</td>
+                                        <td class="py-2.5 font-bold text-gray-800 capitalize">{{ req.waste_category|default:req.request_type }}</td>
+                                        <td class="py-2.5 text-right">
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold 
+                                                {% if req.status|lower == 'pending' %}bg-amber-50 text-amber-600
+                                                {% elif req.status|lower == 'in progress' %}bg-blue-50 text-blue-600
+                                                {% else %}bg-emerald-50 text-emerald-600{% endif %}">
+                                                {{ req.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="py-6 text-center text-gray-400 text-xs">No recent requests found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Track Current Request Card -->
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wide">Track Current Request</h4>
+                            {% if latest_request %}
+                                <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full capitalize">
+                                    {{ latest_request.request_type }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {% if latest_request %}
+                            <p class="text-[11px] text-gray-400 mb-4">Request ID: #WR{{ latest_request.id }}</p>
+
+                            <div class="space-y-3.5 text-xs">
+                                <!-- Step 1: Request Submitted -->
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                                        <i class="fa-solid fa-check"></i>
+                                    </span>
+                                    <div>
+                                        <p class="font-bold text-gray-800">Request Submitted</p>
+                                        <p class="text-[10px] text-gray-400">{{ latest_request.preferred_date|date:"d M Y" }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Accepted / Assigned -->
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 rounded-full {% if latest_request.status|lower != 'pending' %}bg-emerald-600 text-white{% else %}bg-gray-100 text-gray-400{% endif %} flex items-center justify-center text-[10px] font-bold shrink-0">
+                                        <i class="fa-solid fa-check"></i>
+                                    </span>
+                                    <div>
+                                        <p class="font-bold {% if latest_request.status|lower != 'pending' %}text-gray-800{% else %}text-gray-400{% endif %}">
+                                            Accepted by HKS Member
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Collection In Progress -->
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 rounded-full {% if latest_request.status|lower == 'in progress' or latest_request.status|lower == 'completed' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-400{% endif %} flex items-center justify-center text-[10px] font-bold shrink-0">
+                                        <i class="fa-solid fa-truck"></i>
+                                    </span>
+                                    <div>
+                                        <p class="font-bold {% if latest_request.status|lower == 'in progress' or latest_request.status|lower == 'completed' %}text-gray-800{% else %}text-gray-400{% endif %}">
+                                            Collection In Progress
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Step 4: Completed -->
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-6 h-6 rounded-full {% if latest_request.status|lower == 'completed' %}bg-emerald-600 text-white{% else %}bg-gray-100 text-gray-400{% endif %} flex items-center justify-center text-[10px] font-bold shrink-0">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    </span>
+                                    <div>
+                                        <p class="font-bold {% if latest_request.status|lower == 'completed' %}text-gray-800{% else %}text-gray-400{% endif %}">
+                                            Completed
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="py-8 text-center text-xs text-gray-400">
+                                No active request to track.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 3. Notifications Card -->
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wide">Notifications</h4>
+                            <span class="text-[10px] text-emerald-700 font-bold">Live Updates</span>
+                        </div>
+                        <div class="space-y-3 text-xs">
+                            {% for req in requests %}
+                                <div class="flex items-start space-x-2.5 p-2.5 bg-gray-50 rounded-2xl">
+                                    {% if req.status|lower == 'completed' %}
+                                        <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 shrink-0"></i>
+                                    {% elif req.status|lower == 'in progress' %}
+                                        <i class="fa-solid fa-truck text-blue-500 mt-0.5 shrink-0"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-clock text-amber-500 mt-0.5 shrink-0"></i>
+                                    {% endif %}
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-bold text-gray-800 text-[11px] truncate capitalize">{{ req.waste_category|default:req.request_type }} Collection</p>
+                                        <p class="text-[10px] text-gray-400">Date: {{ req.preferred_date|date:"d M Y" }} (Status: {{ req.status }})</p>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <p class="text-xs text-gray-400 py-6 text-center">No notifications available.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
     </div>
 
-    <div>
-      <a href="/login/" class="flex items-center space-x-3 px-3 py-2 text-sm text-emerald-200 hover:text-white">
-        <i data-lucide="log-out" class="w-5 h-5"></i>
-        <span>Logout</span>
-      </a>
-    </div>
-  </aside>
-
-  <!-- MAIN AREA -->
-  <div class="flex-1 flex flex-col overflow-y-auto">
-    <!-- Top Bar -->
-    <header class="bg-white border-b border-gray-200 px-8 py-3.5 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-          {{ request.user.username|first|upper|default:"C" }}
-        </div>
-        <div>
-          <h2 class="text-sm font-semibold text-gray-800">Hello, {{ request.user.username|default:"Resident" }}</h2>
-          <p class="text-xs text-gray-500">Citizen • Ward 04</p>
-        </div>
-      </div>
-      <button onclick="showSection('request')" class="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
-        <i data-lucide="plus" class="w-4 h-4"></i>
-        <span>New Request</span>
-      </button>
-    </header>
-
-    <!-- SECTION 1: DASHBOARD -->
-    <main id="section-dashboard" class="p-8 space-y-6">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p class="text-sm text-gray-500">Overview of your waste collection requests and pickups.</p>
-      </div>
-
-      <!-- 4 Summary Stat Cards (Dynamic) -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Card 1: Total Requests -->
-                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-4">
-                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-full">
-                        <i data-lucide="clipboard-list" class="w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-medium">Total Requests</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ total_requests|default:"0" }}</h3>
-                        <span class="text-xs text-emerald-600 font-medium">All time</span>
-                    </div>
-                </div>
-
-                <!-- Card 2: Pending Requests -->
-                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-4">
-                    <div class="p-3 bg-amber-50 text-amber-500 rounded-full">
-                        <i data-lucide="hourglass" class="w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-medium">Pending</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ pending_count|default:"0" }}</h3>
-                        <span class="text-xs text-amber-600 font-medium">Awaiting action</span>
-                    </div>
-                </div>
-
-                <!-- Card 3: In Progress Requests -->
-                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-4">
-                    <div class="p-3 bg-blue-50 text-blue-500 rounded-full">
-                        <i data-lucide="truck" class="w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-medium">In Progress</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ in_progress_count|default:"0" }}</h3>
-                        <span class="text-xs text-blue-600 font-medium">Pickups active</span>
-                    </div>
-                </div>
-
-                <!-- Card 4: Completed Requests -->
-                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-4">
-                    <div class="p-3 bg-green-50 text-green-600 rounded-full">
-                        <i data-lucide="check-circle" class="w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-medium">Completed</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ completed_count|default:"0" }}</h3>
-                        <span class="text-xs text-green-600 font-medium">Successfully collected</span>
-                    </div>
-                </div>
-            </div>
-      <!-- Table & Poster -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-semibold text-gray-800">Recent Requests</h3>
-            <a href="#" class="text-xs font-semibold text-emerald-600 hover:underline">View All</a>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="text-xs text-gray-400 font-medium border-b border-gray-100">
-                <tr>
-                  <th class="pb-3">#</th>
-                  <th class="pb-3">Date</th>
-                  <th class="pb-3">Waste Type</th>
-                  <th class="pb-3">Status</th>
-                  <th class="pb-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100 text-gray-600 text-xs">
-                <tr>
-                  <td class="py-3 font-medium">001</td>
-                  <td class="py-3">22 Aug 2026</td>
-                  <td class="py-3 font-medium text-gray-800">Plastic</td>
-                  <td class="py-3"><span class="px-2.5 py-1 bg-amber-50 text-amber-600 rounded-full font-semibold">Pending</span></td>
-                  <td class="py-3 text-center"><button class="text-emerald-600 hover:underline font-semibold" onclick="alert('Tracking ID: REQ-001 - In queue for pickup')">[Track]</button></td>
-                </tr>
-                <tr>
-                  <td class="py-3 font-medium">002</td>
-                  <td class="py-3">21 Aug 2026</td>
-                  <td class="py-3 font-medium text-gray-800">Dry Waste</td>
-                  <td class="py-3"><span class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-full font-semibold">In Progress</span></td>
-                  <td class="py-3 text-center"><button class="text-emerald-600 hover:underline font-semibold" onclick="alert('Collector assigned: Reaching soon')">[Track]</button></td>
-                </tr>
-                <tr>
-                  <td class="py-3 font-medium">003</td>
-                  <td class="py-3">20 Aug 2026</td>
-                  <td class="py-3 font-medium text-gray-800">Organic</td>
-                  <td class="py-3"><span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full font-semibold">Completed</span></td>
-                  <td class="py-3 text-center"><button class="text-emerald-600 hover:underline font-semibold" onclick="alert('Collected successfully')">[View]</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="bg-gradient-to-br from-emerald-50 to-green-100 p-6 rounded-xl border border-emerald-200 flex flex-col justify-between">
-          <div>
-            <div class="inline-flex p-2 bg-emerald-600 text-white rounded-lg mb-3">
-              <i data-lucide="leaf" class="w-5 h-5"></i>
-            </div>
-            <h4 class="text-lg font-bold text-emerald-950">A cleaner Kerala is possible with your support!</h4>
-            <p class="text-xs text-emerald-800 mt-2">Segregate waste at source before handing over to Haritha Karma Sena members.</p>
-          </div>
-          <button onclick="showSection('request')" class="w-full mt-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-medium rounded-lg text-xs transition">
-            Request Doorstep Pickup
-          </button>
-        </div>
-      </div>
-    </main>
-
-    <!-- SECTION 2: NEW REQUEST FORM -->
-    <section id="section-request" class="p-8 space-y-6 hidden">
-      <button onclick="showSection('dashboard')" class="text-xs font-semibold text-emerald-700 flex items-center space-x-1 hover:underline">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        <span>Back to Dashboard</span>
-      </button>
-      
-      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm max-w-3xl">
-        <h2 class="text-xl font-bold text-gray-800 mb-2">New Waste Pickup Request</h2>
-        <p class="text-xs text-gray-500 mb-6">Choose between normal regular waste collection or recyclable scrap materials.</p>
-
-        <form onsubmit="handleFormSubmit(event)" class="space-y-5">
-          <!-- Two Request Types -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label class="p-4 border-2 border-emerald-600 bg-emerald-50/40 rounded-xl cursor-pointer block">
-              <input type="radio" name="req_type" value="normal" checked onchange="toggleForm(this.value)" class="mr-2">
-              <span class="font-bold text-sm text-gray-800">1. Normal / Household Waste</span>
-              <p class="text-xs text-gray-500 mt-1">Plastic bottles, clean packaging, dry non-biodegradables.</p>
-            </label>
-            <label class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer block">
-              <input type="radio" name="req_type" value="scrap" onchange="toggleForm(this.value)" class="mr-2">
-              <span class="font-bold text-sm text-gray-800">2. Scrap / Recyclable Items</span>
-              <p class="text-xs text-gray-500 mt-1">E-waste, metals, paper scrap (with photo upload for valuation).</p>
-            </label>
-          </div>
-
-          <!-- Date -->
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Pickup Date</label>
-            <input type="date" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
-          </div>
-
-          <!-- Normal fields -->
-          <div id="field-normal">
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Waste Category</label>
-            <select class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
-              <option>Plastic Waste & Bags</option>
-              <option>Glass Bottles</option>
-              <option>Mixed Non-biodegradable</option>
-            </select>
-          </div>
-
-          <!-- Scrap fields -->
-          <div id="field-scrap" class="hidden space-y-4">
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Scrap Material Category</label>
-              <select class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                <option>Old Newspaper & Cardboard</option>
-                <option>Iron & Scrap Metal</option>
-                <option>Old Appliances / E-waste</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">Upload Photo of Scrap (for Valuation)</label>
-              <input type="file" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Remarks / Location details</label>
-            <textarea rows="2" placeholder="House name, landmark..." class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></textarea>
-          </div>
-
-          <div class="flex justify-end space-x-3 pt-2">
-            <button type="button" onclick="showSection('dashboard')" class="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
-            <button type="submit" class="px-6 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-sm transition">Submit Request</button>
-          </div>
-        </form>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    lucide.createIcons();
-
-    function showSection(section) {
-      const dash = document.getElementById('section-dashboard');
-      const req = document.getElementById('section-request');
-      const navDash = document.getElementById('nav-dashboard');
-      const navReq = document.getElementById('nav-request');
-
-      if (section === 'request') {
-        dash.classList.add('hidden');
-        req.classList.remove('hidden');
-        navDash.classList.remove('active-nav');
-        navReq.classList.add('active-nav');
-      } else {
-        req.classList.add('hidden');
-        dash.classList.remove('hidden');
-        navReq.classList.remove('active-nav');
-        navDash.classList.add('active-nav');
-      }
-    }
-
-    function toggleForm(val) {
-      const normalDiv = document.getElementById('field-normal');
-      const scrapDiv = document.getElementById('field-scrap');
-      if (val === 'scrap') {
-        scrapDiv.classList.remove('hidden');
-        normalDiv.classList.add('hidden');
-      } else {
-        scrapDiv.classList.add('hidden');
-        normalDiv.classList.remove('hidden');
-      }
-    }
-
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      alert('Your request has been submitted successfully! You can track the status on the dashboard.');
-      showSection('dashboard');
-    }
-  </script>
 </body>
+</html>

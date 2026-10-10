@@ -41,11 +41,10 @@ urlpatterns = [
     ),
 
     path(
-        'logout/',
-        auth_views.LogoutView.as_view(next_page='home'),
-        name='logout'
-    ),
-
+    'logout/',
+    views.user_logout,
+    name='logout'
+),
 
     # =========================
     # CITIZEN
@@ -70,9 +69,9 @@ urlpatterns = [
     ),
 
     path(
-        'new-request/',
-        views.create_request,
-        name='new-request'
+    'new-request/',
+    views.create_request,
+    name='new-request'  # The exact URL name
     ),
 
     path(
@@ -97,6 +96,9 @@ urlpatterns = [
         views.update_status,
         name='update_status'
     ),
+
+
+    path('download-receipt/<int:request_id>/', views.download_receipt, name='download_receipt'),
 
 
     # =========================
@@ -175,5 +177,6 @@ urlpatterns = [
         views.edit_schedule,
         name='edit_schedule'
     ),
+    
 
 ]

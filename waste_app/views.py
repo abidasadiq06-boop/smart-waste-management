@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import MonthlyWasteSchedule
 from django.contrib import messages
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from .forms import CitizenRegistrationForm, WasteRequestForm, ScrapCategoryForm
+from django.db.models import Sum
 from .models import (
     UserProfile,
     WasteRequest,
@@ -12,11 +12,82 @@ from .models import (
     ScrapCategory,
     MonthlyWasteSchedule,
 )
+import io
+from django.http import FileResponse
+from django.contrib.auth.decorators import login_required
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from .models import WasteRequest
+
+@login_required
+def download_receipt(request, request_id):
+    # Retrieve the specific request for the logged-in citizen
+    req = WasteRequest.objects.get(id=request_id, citizen=request.user)
+
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+
+    # Header / Title
+    p.setFont("Helvetica-Bold", 18)
+    p.setFillColor(colors.HexColor("#065f46")) # Emerald Dark
+    p.drawString(50, 750, "HARITHA KARMA SENA - PAYMENT RECEIPT")
+    
+    p.setFont("Helvetica", 10)
+    p.setFillColor(colors.gray)
+    p.drawString(50, 735, "Clean Environment, Better Tomorrow | Kerala Local Self Government")
+    p.line(50, 725, 550, 725)
+
+    # Receipt Information
+    p.setFillColor(colors.black)
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(50, 690, f"Receipt No: HKS-REC-{req.id}")
+    p.setFont("Helvetica", 10)
+    p.drawString(50, 670, f"Date: {req.preferred_date if hasattr(req, 'preferred_date') and req.preferred_date else 'N/A'}")
+    p.drawString(50, 650, f"Citizen Name: {request.user.username}")
+    p.drawString(50, 630, f"Status: {req.status}")
+
+    # Details Box
+    p.rect(50, 520, 500, 90, stroke=1, fill=0)
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(65, 585, "Service / Collection Description")
+    p.drawString(450, 585, "Amount")
+    p.line(50, 575, 550, 575)
+
+    p.setFont("Helvetica", 10)
+    desc = f"{req.request_type.capitalize()} Waste Collection"
+    p.drawString(65, 550, desc)
+    
+    # Amount calculation (Using 'Rs.' instead of '₹' to avoid standard font encoding errors)
+    amount = "Rs. 50.00" if req.request_type.lower() == 'normal' else "Payout as per scrap rate"
+    p.drawString(430, 550, amount)
+
+    # Footer note
+    p.setFont("Helvetica-Oblique", 9)
+    p.setFillColor(colors.gray)
+    p.drawString(50, 480, "* This is an automated computer-generated receipt for Haritha Karma Sena waste management service.")
+
+    p.showPage()
+    p.save()
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename=f"Receipt_HKS_{req.id}.pdf")
 
 
-# =========================
+
+
+# ==============================
+# LOGOUT
+# ==============================
+def user_logout(request):
+    logout(request)
+    return redirect('login')
+
+
+# ==============================
 # LOGIN
-# =========================
+# ==============================
+
 
 def user_login(request):
 
@@ -95,7 +166,7 @@ def register_citizen(request):
 
             login(request, user)
 
-            return redirect('request_list')
+            return redirect('citizen_dashboard')
 
     else:
         form = CitizenRegistrationForm()
@@ -129,7 +200,7 @@ def create_request(request):
 
             waste_req.save()
 
-            return redirect('request_list')
+            return redirect('citizen_dashboard')
 
     else:
 
@@ -209,86 +280,186 @@ def dashboard_redirect(request):
     return redirect('request_list')
 
 
-# =========================
+# ==============================
 # CITIZEN DASHBOARD
-# =========================
+# ==============================
 
 @login_required
 def citizen_dashboard(request):
+    # Fetch user profile for logged-in user
+    profile = UserProfile.objects.filter(user=request.user).first()
 
-    user = request.user
+    # Fetch user requests using citizen ForeignKey, ordered by latest
+    user_requests = WasteRequest.objects.filter(citizen=request.user).order_by('-id')
 
-    user_requests = WasteRequest.objects.filter(
-        citizen=user
-    )
+    # Latest request for tracking status
+    latest_request = user_requests.first()
 
+    # Next scheduled request for pickup card
+    next_pickup = user_requests.filter(status__in=['Pending', 'pending', 'Scheduled', 'In Progress']).first()
+
+    # Request counts
     total_requests = user_requests.count()
-
-    pending_count = user_requests.filter(
-        status='pending'
-    ).count()
-
-    in_progress_count = user_requests.filter(
-        status__in=['accepted', 'scheduled']
-    ).count()
-
-    completed_count = user_requests.filter(
-        status='completed'
-    ).count()
-
-    recent_requests = user_requests.order_by(
-        '-id'
-    )[:5]
+    pending_count = user_requests.filter(status__iexact='pending').count()
 
     context = {
+        'profile': profile,
+        'requests': user_requests[:5],        # Recent 5 requests for table
+        'latest_request': latest_request,    # Live tracking data
+        'next_pickup': next_pickup,          # Next scheduled pickup card
         'total_requests': total_requests,
         'pending_count': pending_count,
-        'in_progress_count': in_progress_count,
-        'completed_count': completed_count,
-        'unread_notifications_count': 0,
-        'recent_requests': recent_requests,
     }
 
-    return render(
-        request,
-        'waste_app/citizen_dashboard.html',
-        context
-    )
+    return render(request, 'waste_app/citizen_dashboard.html', context)
 
-
-# ==========================================
-# ADMIN DASHBOARD
-# ==========================================
-
+    
 @login_required
 def admin_dashboard(request):
-    # Summary statistics for admin overview cards
-    total_citizens = UserProfile.objects.filter(role='citizen').count()
-    total_workers = UserProfile.objects.filter(role='hks_team').count()
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        # 1. Update Request Status
+        if action == 'update_request_status':
+            req_id = request.POST.get('request_id')
+            new_status = request.POST.get('status')
+            waste_req = get_object_or_404(WasteRequest, id=req_id)
+            waste_req.status = new_status
+            waste_req.save()
+            messages.success(request, f'Request #{req_id} status updated to {new_status.title()}!')
+
+        # 2. Add Citizen Directly
+        elif action == 'add_citizen':
+            username = request.POST.get('username')
+            phone = request.POST.get('phone')
+            ward_no = request.POST.get('ward_no')
+            address = request.POST.get('address')
+        # 3. Delete Citizen
+        elif action == 'delete_citizen':
+            citizen_id = request.POST.get('citizen_id')
+            profile = get_object_or_404(UserProfile, id=citizen_id)
+            user_obj = profile.user
+            profile.delete()
+            user_obj.delete()
+            messages.success(request, 'Citizen deleted successfully!')
+
+        # 4. Add HKS Member
+        elif action == 'add_hks':
+            username = request.POST.get('username')
+            password = request.POST.get('password') or '1234'
+            phone = request.POST.get('phone')
+            ward_no = request.POST.get('ward_no')
+            if username:
+                user, _ = User.objects.get_or_create(username=username)
+                user.set_password(password)
+                user.save()
+                profile, _ = UserProfile.objects.get_or_create(user=user)
+                profile.role = 'worker'
+                profile.phone = phone
+                profile.ward_no = str(ward_no).strip()
+                profile.save()
+                messages.success(request, f'HKS Member {username} added!')
+
+        # 5. Edit HKS Member
+        elif action == 'edit_hks':
+            member_id = request.POST.get('member_id')
+            phone = request.POST.get('phone')
+            ward_no = request.POST.get('ward_no')
+            first_name = request.POST.get('first_name')
+            new_password = request.POST.get('password')
+            
+            profile = get_object_or_404(UserProfile, id=member_id)
+            profile.phone = phone
+            profile.ward_no = str(ward_no).strip()
+            profile.save()
+            
+            if first_name:
+                profile.user.first_name = first_name
+            if new_password:
+                profile.user.set_password(new_password)
+            profile.user.save()
+            messages.success(request, 'HKS Member updated successfully!')
+
+        # Delete HKS Member
+        elif action == 'delete_hks':
+            member_id = request.POST.get('member_id')
+            profile = get_object_or_404(UserProfile, id=member_id)
+            user_obj = profile.user
+            profile.delete()
+            user_obj.delete()
+            messages.success(request, 'HKS Member deleted successfully!')  
+            
+            
+        return redirect('admin_dashboard')
+
+    # Citizens
+    citizens = UserProfile.objects.filter(role='citizen')
+    total_citizens = citizens.count()
+
+    # HKS Members with Work Status
+    hks_profiles = UserProfile.objects.exclude(role='citizen').exclude(user__is_superuser=True)
+    total_workers = hks_profiles.count()
+
+    hks_members = []
+    for hks in hks_profiles:
+        hks_requests = WasteRequest.objects.filter(citizen__userprofile__ward_no=hks.ward_no) if hks.ward_no else WasteRequest.objects.none()
+        pending_cnt = hks_requests.filter(status='pending').count()
+        completed_cnt = hks_requests.filter(status='completed').count()
+        
+        hks_members.append({
+            'id': hks.id,
+            'user': hks.user,
+            'phone': hks.phone,
+            'ward_no': hks.ward_no,
+            'pending_count': pending_cnt,
+            'completed_count': completed_cnt,
+            'work_status': 'Completed' if (pending_cnt == 0 and completed_cnt > 0) else ('Pending' if pending_cnt > 0 else 'No Tasks')
+        })
+
+    # Requests & Stats
     total_requests = WasteRequest.objects.count()
-    pending_requests = WasteRequest.objects.filter(status='pending').count()
     completed_requests = WasteRequest.objects.filter(status='completed').count()
-    total_payments = CollectionPayment.objects.count()
+    all_requests = WasteRequest.objects.all().order_by('-id')[:10]
 
-    # Fetch scrap requests and all scrap categories
-    scrap_requests = WasteRequest.objects.filter(
-        request_type='custom'
-    ).select_related('citizen', 'scrap_category')
-
+    # Scrap Items
     scrap_items = ScrapCategory.objects.all()
 
-    # Pass all variables to the template context
+    # Monthly Schedules
+    MONTH_NAMES = {
+        1: 'January', 2: 'February', 3: 'March', 4: 'April',
+        5: 'May', 6: 'June', 7: 'July', 8: 'August',
+        9: 'September', 10: 'October', 11: 'November', 12: 'December'
+    }
+    DEFAULT_SCHEDULES = {
+        1: 'Plastic, Paper', 2: 'Glass, Metal', 3: 'Plastic, Paper',
+        4: 'Glass, Metal', 5: 'Plastic, Paper', 6: 'Glass, Metal',
+        7: 'Plastic, Paper', 8: 'Glass, Metal', 9: 'Plastic, Paper',
+        10: 'Glass, Metal', 11: 'Plastic, Paper', 12: 'Glass, Metal'
+    }
+    schedules = []
+    for month_num, month_name in MONTH_NAMES.items():
+        schedule_obj, _ = MonthlyWasteSchedule.objects.get_or_create(
+            month=month_num,
+            defaults={'waste_items': DEFAULT_SCHEDULES.get(month_num, 'Plastic, Paper')}
+        )
+        items_list = [item.strip() for item in schedule_obj.waste_items.split(',') if item.strip()]
+        schedules.append({
+            'month_num': month_num,
+            'month_name': month_name,
+            'items': items_list
+        })
+
     context = {
         'total_citizens': total_citizens,
         'total_workers': total_workers,
         'total_requests': total_requests,
-        'pending_requests': pending_requests,
         'completed_requests': completed_requests,
-        'total_payments': total_payments,
-        'scrap_requests': scrap_requests,
+        'citizens': citizens,
+        'hks_members': hks_members,
         'scrap_items': scrap_items,
+        'schedules': schedules,
+        'all_requests': all_requests,
     }
-
     return render(request, 'waste_app/admin_dashboard.html', context)
 
 # =========================
@@ -688,6 +859,8 @@ def edit_schedule(request, month):
             'schedule': schedule
         }
     )
+
+
 @login_required
 def add_scrap_item(request):
 

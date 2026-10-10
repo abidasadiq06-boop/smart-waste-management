@@ -203,7 +203,11 @@
 
         <!-- Form -->
         <form method="POST">
+            
+            <form method="POST" autocomplete="off">
             {% csrf_token %}
+            <input type="text" style="display:none;" tabindex="-1">
+            <input type="password" style="display:none;" tabindex="-1">
 
             <!-- Full Name / Username -->
             <div class="input-group-custom">
@@ -240,7 +244,7 @@
             <!-- Email Address -->
             <div class="input-group-custom">
                 <i class="fa-regular fa-envelope field-icon"></i>
-                <input type="email" name="email" class="form-control-custom" placeholder="Email Address" value="{{ form.email.value|default:'' }}">
+                <input type="email" name="email" class="form-control-custom" placeholder="Email Address" value="{{ form.email.value|default:'' }}" autocomplete="off">
             </div>
 
             <!-- Address -->
